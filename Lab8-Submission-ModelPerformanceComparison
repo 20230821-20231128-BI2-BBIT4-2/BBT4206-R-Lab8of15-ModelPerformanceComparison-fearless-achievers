@@ -1,0 +1,120 @@
+#install packages
+
+if (require("languageserver")) {
+  require("languageserver")
+} else {
+  install.packages("languageserver", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## mlbench ----
+if (require("mlbench")) {
+  require("mlbench")
+} else {
+  install.packages("mlbench", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## caret ----
+if (require("caret")) {
+  require("caret")
+} else {
+  install.packages("caret", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## kernlab ----
+if (require("kernlab")) {
+  require("kernlab")
+} else {
+  install.packages("kernlab", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## randomForest ----
+if (require("randomForest")) {
+  require("randomForest")
+} else {
+  install.packages("randomForest", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+# STEP 2. Load the Dataset ----
+library(readr)
+IRIS <- read_csv("data/IRIS.csv")
+View(IRIS)
+
+# STEP 3. The Resamples Function ----
+
+train_control <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+
+### LDA ----
+set.seed(7)
+IRIS_model_lda <- train(species ~ ., data = IRIS,
+                        method = "lda", trControl = train_control)
+
+### CART ----
+set.seed(7)
+IRIS_model_cart <- train(species ~ ., data = IRIS,
+                         method = "rpart", trControl = train_control)
+
+### KNN ----
+set.seed(7)
+IRIS_model_knn <- train(species ~ ., data = IRIS,
+                        method = "knn", trControl = train_control)
+
+### SVM ----
+set.seed(7)
+IRIS_model_svm <- train(species ~ ., data = IRIS,
+                        method = "svmRadial", trControl = train_control)
+
+### Random Forest ----
+set.seed(7)
+IRIS_model_rf <- train(species ~ ., data = IRIS,
+                       method = "rf", trControl = train_control)
+
+## 3.b. Call the `resamples` Function ----
+
+results <- resamples(list(LDA = IRIS_model_lda, CART = IRIS_model_cart,
+                          KNN = IRIS_model_knn, SVM = IRIS_model_svm,
+                          RF = IRIS_model_rf))
+
+# STEP 4. Display the Results ----
+## 1. Table Summary ----
+
+summary(results)
+
+## 2. Box and Whisker Plot ----
+
+scales <- list(x = list(relation = "free"), y = list(relation = "free"))
+bwplot(results, scales = scales)
+
+## 3. Dot Plots ----
+
+
+scales <- list(x = list(relation = "free"), y = list(relation = "free"))
+dotplot(results, scales = scales)
+
+## 4. Scatter Plot Matrix ----
+# This is useful when considering whether the predictions from two
+
+
+splom(results)
+
+## 5. Pairwise xyPlots ----
+
+# xyplot plots to compare models
+xyplot(results, models = c("LDA", "SVM"))
+
+# or
+# xyplot plots to compare models
+xyplot(results, models = c("SVM", "CART"))
+
+## 6. Statistical Significance Tests ----
+
+
+diffs <- diff(results)
+
+summary(diffs)
+
+
